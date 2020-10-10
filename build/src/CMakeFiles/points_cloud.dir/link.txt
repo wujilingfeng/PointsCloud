@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../temp_libs/libpoints_cloud.a  CMakeFiles/points_cloud.dir/points_cloud_algorithm.cpp.o
+/usr/bin/ranlib ../../temp_libs/libpoints_cloud.a

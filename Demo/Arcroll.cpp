@@ -268,6 +268,122 @@ void viewer_Arcroll_key_callback(Viewer_Intera*vi)
 
 }
 
+static void myobj2off(char const * filename)
+{
+    int filenamesize=strlen(filename);
+    char *outfilename=(char*)malloc(sizeof(char)*(filenamesize+2));
+    strcpy(outfilename,filename);
+    strcpy(&(outfilename[filenamesize-3]),"off");
+    printf("%s\n",outfilename);
+#ifdef WIN32
+    FILE *infile,*outfile;
+    fopen_s(&infile,filename,"r");
+    fopen_s(&outfile,outfilename,"w");
+#else
+    FILE * infile=fopen(filename,"r");
+    FILE *outfile=fopen(outfilename,"w");
+#endif
+    if(!infile)
+    {
+        printf("can't open this file %s\n",filename);
+        return;
+    }
+    if(!outfile)
+    {
+        printf("can't open this file %s\n",filename);
+        return;
+    }
+    char a;
+    int v_rows=0;
+    while(!feof(infile))
+    {
+         fscanf(infile,"%c",&a);
+        if(a=='\r')
+        {
+             fscanf(infile,"%c",&a);
+        }
+        if(a=='#')
+        {
+            myfgets(infile); 
+        }
+        else if(a=='v')
+        {
+            fscanf(infile,"%c",&a);
+            if(a==' ')
+            {
+               v_rows++;
+            }
+            
+            myfgets(infile);
+            
+        }
+        else if(a=='\n')
+        {
+        }
+        else
+        {
+            
+           myfgets(infile);
+        } 
+    }
+    fseek(outfile,0,SEEK_SET);
+    fprintf(outfile,"OFF\n");
+    fprintf(outfile,"%u %u %d\n",v_rows,0,0);
+
+    fseek(infile,0,SEEK_SET);
+    unsigned int f_ids[10];
+    while(!feof(infile))
+    {
+        double v_p;
+        unsigned int f_id;
+        fscanf(infile,"%c",&a);
+        if(a=='\r')
+        {
+             fscanf(infile,"%c",&a);
+        }
+        if(a=='#')
+        {
+            myfgets(infile); 
+        }
+        else if(a=='v')
+        {
+            fscanf(infile,"%c",&a);
+            if(a==' ')
+            {
+                for(int i=0;i<3;i++)
+                {
+                
+                    fscanf(infile,"%lf ",&v_p);
+                    //printf("%lf ",v_p);
+                    fprintf(outfile,"%lf ",v_p);
+                }
+              //  v_rows++;
+                fprintf(outfile,"\n");
+            }
+            else
+            {
+            
+                myfgets(infile);
+            }
+            
+        }
+        else if(a=='\n')
+        {
+        }
+        else
+        {
+            
+           myfgets(infile);
+        }
+    
+    }
+    
+    printf("v_rows: %u here\n",v_rows);
+   free(outfilename); 
+    fclose(infile);
+    fclose(outfile); 
+}
+
 static void _Read_(Mesh*mesh,char const * filename)
 {
     int i=0;
@@ -289,7 +405,7 @@ static void _Read_(Mesh*mesh,char const * filename)
     if(filename[i+1]=='o'&&filename[i+2]=='b'&&filename[i+3]=='j') 
     {
         fn[i+1]='o';fn[i+2]='f';fn[i+3]='f';
-        objtooff(filename);
+        myobj2off(filename);
         _ReadOff_(mesh,fn,3); 
     }
     else if(filename[i+1]=='o'&&filename[i+2]=='f'&&filename[i+3]=='f')
